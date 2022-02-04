@@ -37,28 +37,28 @@ sudo ./efa_installer.sh -y
 # chmod +x cuda_10.0.130_410.48_linux
 # sudo ./cuda_10.0.130_410.48_linux --silent --override --toolkit --samples --no-opengl-libs
 
-echo 'Building nccl'                                                                                                                                                                   
-cd $INSTALL_ROOT/packages                                                                                                                                                              
-git clone https://github.com/NVIDIA/nccl.git || echo ignored                                                                                                                           
-cd nccl                                                                                                                                                                                
-# git checkout v2.4.8-1                                                                                                                                                                
-make -j src.build NVCC_GENCODE="-gencode=arch=compute_75,code=sm_75"                                                                                                                   
-make pkg.txz.build                                                                                                                                                                     
-cd build/pkg/txz                                                                                                                                                                       
-tar xvfJ nccl_2.11.4-1+cuda11.3_x86_64.txz                                                                                                                                             
+echo 'Building nccl'
+cd $INSTALL_ROOT/packages
+git clone https://github.com/NVIDIA/nccl.git || echo ignored
+cd nccl
+# git checkout v2.4.8-1
+make -j src.build NVCC_GENCODE="-gencode=arch=compute_75,code=sm_75"
+make pkg.txz.build
+cd build/pkg/txz
+tar xvfJ nccl_2.11.4-1+cuda11.3_x86_64.txz
 sudo cp -r nccl_2.11.4-1+cuda11.3_x86_64/include/* /usr/local/cuda/include/
-sudo cp -r nccl_2.11.4-1+cuda11.3_x86_64/lib/* /usr/local/cuda/lib
+sudo cp -r nccl_2.11.4-1+cuda11.3_x86_64/lib/* /usr/local/cuda/lib/
 
-echo 'Building aws-ofi-nccl'                                                                                                                                                           
-cd $INSTALL_ROOT/packages                                                                                                                                                              
-git clone https://github.com/aws/aws-ofi-nccl.git || echo exists                                                                                                                       
-cd aws-ofi-nccl                                                                                                                                                                        
-git checkout aws                                                                                                                                                                       
-git pull                                                                                                                                                                               
-./autogen.sh                                                                                                                                                                           
-                                                                                                                                                                                       
-./configure --prefix=/usr --with-mpi=/opt/amazon/openmpi --with-libfabric=/opt/amazon/efa/ --with-cuda=/usr/local/cuda --with-nccl=/usr/local/cuda                                     
-                                                                                                                                                                                       
+echo 'Building aws-ofi-nccl'
+cd $INSTALL_ROOT/packages
+git clone https://github.com/aws/aws-ofi-nccl.git || echo exists
+cd aws-ofi-nccl
+git checkout aws
+git pull
+./autogen.sh
+
+./configure --prefix=/usr --with-mpi=/opt/amazon/openmpi --with-libfabric=/opt/amazon/efa/ --with-cuda=/usr/local/cuda --with-nccl=$INSTALL_ROOT/packages/nccl/build
+
 sudo yum install libudev-devel -y
 PATH=/opt/amazon/efa/bin:$PATH LDFLAGS="-L/opt/amazon/efa/lib64" make MPI=1 MPI_HOME=/opt/amazon/openmpi CUDA_HOME=/usr/local/cuda NCCL_HOME=/usr/local/cuda
 sudo make install
@@ -104,12 +104,12 @@ make MPI=1 MPI_HOME=/opt/amazon/openmpi CUDA_HOME=/usr/local/cuda NCCL_HOME=/usr
 # build pytorch, follow https://github.com/pytorch/pytorch#from-source
 
 export PATH=$HOME/anaconda3/bin:$PATH
-conda create -n pytorch_p38 python=3.8 -y
 eval "$(conda shell.bash hook)"
+conda create -n pytorch_p38 python=3.8 -y
 conda activate pytorch_p38
 
 echo "Installing PyTorch dependencies"
-conda install numpy ninja pyyaml mkl mkl-include setuptools cmake cffi typing typing-extensions -y
+conda install numpy ninja pyyaml mkl mkl-include setuptools cmake cffi typing typing_extensions -y
 conda install -c pytorch magma-cuda113 -y
 
 cd $INSTALL_ROOT/packages
@@ -143,9 +143,9 @@ sudo yum install -y
 
 echo "Testing all_reduce_perf"
 # test all_reduce_perf
-export MPI_HOME=/opt/amazon/openmpi
 export CUDA_HOME=/usr/local/cuda
 export EFA_HOME=/opt/amazon/efa
+export MPI_HOME=/opt/amazon/openmpi
 bin=$INSTALL_ROOT/packages/nccl-tests/build/all_reduce_perf
 LD_LIBRARY_PATH=$CUDA_HOME/lib:$CUDA_HOME/lib64:$EFA_HOME/lib64:$MPI_HOME/lib64 $bin -b 8 -e 8
 
