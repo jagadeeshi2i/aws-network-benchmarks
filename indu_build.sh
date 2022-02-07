@@ -106,9 +106,9 @@ make MPI=1 MPI_HOME=/opt/amazon/openmpi CUDA_HOME=/usr/local/cuda NCCL_HOME=/usr
 
 # export PATH=$HOME/anaconda3/bin:$PATH
 # eval "$(conda shell.bash hook)"
-# conda create -n pytorch_p38 python=3.8 -y
-# conda activate pytorch_p38
-conda update python -y
+source /shared/.conda/etc/profile.d/conda.sh                                                                                                                                           
+conda create -n pytorch_p38 python=3.8 -y
+conda activate pytorch_p38
 
 echo "Installing PyTorch dependencies"
 conda install numpy ninja pyyaml mkl mkl-include setuptools cmake cffi typing typing_extensions -y
