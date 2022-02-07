@@ -32,22 +32,23 @@ sudo ./efa_installer.sh -y
 # sudo bash NVIDIA-Linux-x86_64-418.40.04.run --no-drm --disable-nouveau --dkms --silent --install-libglvnd || echo "already loaded"
 
 # echo "Installing CUDA"
-# cd $INSTALL_ROOT/packages
-# wget https://developer.nvidia.com/compute/cuda/10.0/Prod/local_installers/cuda_10.0.130_410.48_linux
-# chmod +x cuda_10.0.130_410.48_linux
-# sudo ./cuda_10.0.130_410.48_linux --silent --override --toolkit --samples --no-opengl-libs
+cd $INSTALL_ROOT/packages
+wget https://developer.download.nvidia.com/compute/cuda/11.3.0/local_installers/cuda_11.3.0_465.19.01_linux.run
+chmod +x cuda_11.3.0_465.19.01_linux.run
+sudo ./cuda_11.3.0_465.19.01_linux.run --silent --override --toolkit --samples --no-opengl-libs
 
 echo 'Building nccl'
 cd $INSTALL_ROOT/packages
 git clone https://github.com/NVIDIA/nccl.git || echo ignored
 cd nccl
-# git checkout v2.4.8-1
+git checkout v2.11.4-1
 make -j src.build NVCC_GENCODE="-gencode=arch=compute_75,code=sm_75"
 make pkg.txz.build
 cd build/pkg/txz
+
 tar xvfJ nccl_2.11.4-1+cuda11.3_x86_64.txz
 sudo cp -r nccl_2.11.4-1+cuda11.3_x86_64/include/* /usr/local/cuda/include/
-sudo cp -r nccl_2.11.4-1+cuda11.3_x86_64/lib/* /usr/local/cuda/lib/
+sudo cp -r nccl_2.11.4-1+cuda11.3_x86_64/lib/* /usr/local/cuda/lib64/
 
 echo 'Building aws-ofi-nccl'
 cd $INSTALL_ROOT/packages
@@ -67,7 +68,7 @@ sudo make install
 # cd $INSTALL_ROOT/packages
 # wget https://s3.amazonaws.com/yaroslavvb2/data/cudnn-10.0-linux-x64-v7.6.0.64.tgz
 # echo '***' tar zxvf cudnn-10.0-linux-x64-v7.6.0.64.tgz
-# tar zxvf cudnn-10.0-linux-x64-v7.6.0.64.tgz 
+# tar zxvf cudnn-10.0-linux-x64-v7.6.0.64.tgz
 # echo '***' sudo cp -r cuda/* /usr/local/cuda-10.0
 # sudo cp -r cuda/* /usr/local/cuda-10.0
 
@@ -80,9 +81,9 @@ echo 'downloading bazel'
 wget https://github.com/bazelbuild/bazel/releases/download/5.0.0/bazel-5.0.0-installer-linux-x86_64.sh
 sudo bash bazel-5.0.0-installer-linux-x86_64.sh
 
-cd $INSTALL_ROOT/packages
-wget https://repo.anaconda.com/archive/Anaconda3-2021.11-Linux-x86_64.sh
-bash Anaconda3-2021.11-Linux-x86_64.sh -b
+# cd $INSTALL_ROOT/packages
+# wget https://repo.anaconda.com/archive/Anaconda3-2021.11-Linux-x86_64.sh
+# bash Anaconda3-2021.11-Linux-x86_64.sh -b
 
 sudo sh -c 'echo "/opt/amazon/efa/lib64/" > mpi.conf'
 sudo sh -c 'echo "/usr/local/cuda/lib/" > nccl.conf'
@@ -99,14 +100,15 @@ echo 'installing NCCL'
 cd $INSTALL_ROOT/packages
 git clone https://github.com/NVIDIA/nccl-tests.git || echo ignored
 cd nccl-tests
-make MPI=1 MPI_HOME=/opt/amazon/openmpi CUDA_HOME=/usr/local/cuda NCCL_HOME=/usr/local/cuda 
+make MPI=1 MPI_HOME=/opt/amazon/openmpi CUDA_HOME=/usr/local/cuda NCCL_HOME=/usr/local/cuda
 
 # build pytorch, follow https://github.com/pytorch/pytorch#from-source
 
-export PATH=$HOME/anaconda3/bin:$PATH
-eval "$(conda shell.bash hook)"
-conda create -n pytorch_p38 python=3.8 -y
-conda activate pytorch_p38
+# export PATH=$HOME/anaconda3/bin:$PATH
+# eval "$(conda shell.bash hook)"
+# conda create -n pytorch_p38 python=3.8 -y
+# conda activate pytorch_p38
+conda update python -y
 
 echo "Installing PyTorch dependencies"
 conda install numpy ninja pyyaml mkl mkl-include setuptools cmake cffi typing typing_extensions -y
@@ -121,6 +123,7 @@ git submodule sync
 git submodule update --init --recursive
 
 export CMAKE_PREFIX_PATH=${CONDA_PREFIX:-"$(dirname $(which conda))/../"}
+
 python setup.py install
 
 echo "Installing Torchvision"
