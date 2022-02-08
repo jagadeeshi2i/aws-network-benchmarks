@@ -126,12 +126,12 @@ export CMAKE_PREFIX_PATH=${CONDA_PREFIX:-"$(dirname $(which conda))/../"}
 
 python setup.py install
 
-echo "Installing Torchvision"
-pip uninstall torchvision   # uninstall pip installed version with hardcoded Cuda 9.0
-cd $INSTALL_ROOT/packages
-git clone https://github.com/pytorch/vision
-cd vision
-python setup.py install
+# echo "Installing Torchvision"
+# pip uninstall torchvision   # uninstall pip installed version with hardcoded Cuda 9.0
+# cd $INSTALL_ROOT/packages
+# git clone https://github.com/pytorch/vision
+# cd vision
+# python setup.py install
 
 echo "Installing additional packages"
 wget https://download-ib01.fedoraproject.org/pub/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm
@@ -144,14 +144,14 @@ sudo yum install -y gdb
 sudo yum install -y tmux
 sudo yum install -y
 
-echo "Testing all_reduce_perf"
-# test all_reduce_perf
-export CUDA_HOME=/usr/local/cuda
-export EFA_HOME=/opt/amazon/efa
-export MPI_HOME=/opt/amazon/openmpi
-bin=$INSTALL_ROOT/packages/nccl-tests/build/all_reduce_perf
-LD_LIBRARY_PATH=$CUDA_HOME/lib:$CUDA_HOME/lib64:$EFA_HOME/lib64:$MPI_HOME/lib64 $bin -b 8 -e 8
+# echo "Testing all_reduce_perf"
+# # test all_reduce_perf
+# export CUDA_HOME=/usr/local/cuda
+# export EFA_HOME=/opt/amazon/efa
+# export MPI_HOME=/opt/amazon/openmpi
+# bin=$INSTALL_ROOT/packages/nccl-tests/build/all_reduce_perf
+# LD_LIBRARY_PATH=$CUDA_HOME/lib:$CUDA_HOME/lib64:$EFA_HOME/lib64:$MPI_HOME/lib64 $bin -b 8 -e 8
 
-# test MPI EFA
-echo "Testing mpirun"
-/opt/amazon/openmpi/bin/mpirun -n 8 -x NCCL_DEBUG=INFO -x FI_PROVIDER=efa -x LD_LIBRARY_PATH=$CUDA_HOME/lib:$CUDA_HOME/lib64:$EFA_HOME/lib64:$MPI_HOME/lib64 $bin -b 8 -e 8
+# # test MPI EFA
+# echo "Testing mpirun"
+# /opt/amazon/openmpi/bin/mpirun -n 8 -x NCCL_DEBUG=INFO -x FI_PROVIDER=efa -x LD_LIBRARY_PATH=$CUDA_HOME/lib:$CUDA_HOME/lib64:$EFA_HOME/lib64:$MPI_HOME/lib64 $bin -b 8 -e 8
